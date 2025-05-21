@@ -1,5 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Pixelify+Sans:wght@400..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sixtyfour+Convergence&display=swap');
+
+
+@import "tailwindcss";
+
 body,
 html {
   margin: 0;
   padding: 0;
 }
+
+

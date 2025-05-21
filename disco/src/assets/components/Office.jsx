@@ -16,19 +16,24 @@ export function Office(props) {
     const { nodes, materials } = useGLTF('./models/WawaOffice.glb')
     const ref = useRef()
     const tl = useRef()
+    const libraryRef = useRef()
+    const atticRef = useRef()
 
     const scroll = useScroll()
 
     useFrame(() => {
-        if (tl.current) {
+        if (tl.current && tl.current.duration()) {
             tl.current.seek(scroll.offset * tl.current.duration())
         }
     })
 
+    
     useLayoutEffect(() => {
-        tl.current = gsap.timeline()
+        if (!ref.current || !libraryRef.current || !atticRef.current) return;
 
-        // Vertical
+        tl.current = gsap.timeline();
+
+        // Vertical (déplacement du groupe principal)
         tl.current.to(
             ref.current.position,
             {
@@ -36,15 +41,84 @@ export function Office(props) {
                 y: -FLOOR_HEIGHT * (NB_FLOORS - 1),
             },
             0
-        )
-    }, [])
+        );
+
+        // Library position (slide in)
+        tl.current.from(
+            libraryRef.current.position,
+            {
+                x: -2,
+                duration: 0.5,
+            },
+            0.5
+        );
+
+        // Library rotation (tourne sur Y)
+        tl.current.from(
+            libraryRef.current.rotation,
+            {
+                y: Math.PI / 2,
+                duration: 0.5,
+            },
+            0.5
+        );
+
+        // Attic position Y (slide in)
+        tl.current.from(
+            atticRef.current.position,
+            {
+                y: 2,
+                duration: 0.5,
+            },
+            0
+        );
+
+        // Attic position Z (slide in)
+        tl.current.from(
+            atticRef.current.position,
+            {
+                z: -2,
+                duration: 0.5,
+            },
+            1.5
+        );
+
+        // Synchronise la timeline avec le scroll dès l'init
+        if (tl.current && tl.current.duration()) {
+            tl.current.seek(scroll.offset * tl.current.duration());
+        }
+    }, [scroll]);
 
     return (
         <group {...props} dispose={null} ref={ref}>
-            <mesh geometry={nodes['01_office'].geometry} material={materials['01']} />
-            <mesh geometry={nodes['02_library'].geometry} material={materials['02']} position={[0, 2.114, -2.23]} />
-            <mesh geometry={nodes['03_attic'].geometry} material={materials['03']} position={[-1.97, 4.227, -2.199]} />
+
+            {/* Stage 1 */}
+            <mesh 
+                geometry={nodes['01_office'].geometry} 
+                material={materials['01']} />
+                
+
+            {/* Stage 2 */}
+            <group position={[0, 2.114, -2.23]}>
+                <group ref={libraryRef}>
+                    <mesh 
+                        geometry={nodes['02_library'].geometry} 
+                        material={materials['02']} 
+                         />
+                </group>
+            </group>
+
+            {/* Stage 3 */}
+            <group position={[-1.97, 4.23, -2.2]}> 
+                <group ref={atticRef}>
+                    <mesh 
+                        geometry={nodes['03_attic'].geometry} 
+                        material={materials['03']}  />
+                </group>
+            </group>
+
         </group>
+
     )
 }
 
